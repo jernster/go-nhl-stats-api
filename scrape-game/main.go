@@ -247,55 +247,50 @@ func main() {
 		sGameDate := gameDateTime.Format("20060102150405")
 		iGameDate, err := strconv.Atoi(sGameDate)
 		fmt.Println(iGameDate)
-		//fmt.Println(gameDateTime)
-		//fmt.Println(gameEndDateTime)
-		//fmt.Printf("%T", iGameDate)
-
-		//game := pbpData.GameData.Game.Pk
-		//fmt.Println(game)
-
-		//teams := pbpData.GameData.Teams.Home.Name
-		//fmt.Println(teams)
-
-		//players := pbpData.GameData.Players
-		//fmt.Println(players)
-		//fmt.Printf("%T", players)
-
-		// linescore := pbpData.LiveData.Linescore
-		// fmt.Println(linescore)
-
-		// rosters := pbpData.LiveData.Boxscore.Teams
-		// fmt.Println(rosters)
-
-		//fmt.Println(len(pbpData.GameData.Players[0]))
-
-		// for i := 0; i < len(pbpData.GameData.Players[0]); i++ {
-		//  	s := pbpData.GameData.Players[0]
-
-		// }
+	
 
 		// for k,v := range players {
 		// 	fmt.Println(k,v)
 		// }
 		//fmt.Println(players)
 		
-		// value prints in curly braces because it's a struct
-		players := pbpData.GameData.Players
-
 		//for k,_ := range pbpData.GameData.Players {
+
+		players := pbpData.GameData.Players
 		
-		var fnames []string
-		for k,v := range players {
-			//fmt.Println(v)
+
+		// create tempDict to modify the key and reassign back to players map
+
+		tempMap := map[string]Player{}
+		for pId,v := range players {
+			//fmt.Println(pId)
 			//fmt.Printf("%v", v)
 			//fmt.Println(k[2:])
-			k = k[2:]
-			//fmt.Println(k,v.FullName)
-			fnames = append(fnames, v.FullName)
+			pId = pId[2:]
+			//fmt.Println(pId)
+			tempMap[pId] = v
+			////pIds = append(pIds, pId)
 		}
+
+		// clear original players map
+		for k := range players {
+			delete(players, k)
+		}
+		
+		// re-create players map with updated key from tempMap
+		for k,v := range tempMap {
+			//fmt.Println(k,v)
+			players[k] = v
+		}
+
+		for k,v := range players {
+			fmt.Println(k,v)
+		}
+
+		os.Exit(1)
 		//fmt.Printf("%T", players)
 
-		//fmt.Println(fnames)
+		//fmt.Println(pIds)
 
 		teams := pbpData.GameData.Teams
 
@@ -328,6 +323,11 @@ func main() {
 		}
 
 		// Prepare players output
+		// value prints in curly braces because it's a struct
+		
+		//rosters := pbpData.LiveData.Boxscore.BoxscoreTeams
+		//rosters := pbpData.LiveData.Boxscore
+
 		for _, pId := range players {
 			outPlayersPidPrimaryPos := strings.ToLower(pId.PrimaryPosition.Abbreviation)
 			fmt.Println(outPlayersPidPrimaryPos)
@@ -336,51 +336,37 @@ func main() {
 			outPlayersPidLastName := pId.LastName
 			fmt.Println(outPlayersPidLastName)
 
+			// Get the player's team, iceSit, and jersey number
+
+			// for iceSit in rosters:	# 'iceSit' will be 'home' or 'away'
+			// 	rosterKey = "ID" + str(pId)
+			// 	if rosterKey in rosters[iceSit]["players"]:
+			// 		outPlayers[pId]["team"] = outTeams[iceSit]["abbrev"]
+			// 		outPlayers[pId]["iceSit"] = iceSit
+			// 		outPlayers[pId]["jersey"] = rosters[iceSit]["players"][rosterKey]["jerseyNumber"]
+			// for k, iceSit := range rosters {
+			// 	fmt.Println("---", k, iceSit)
+			// }
+
+			//fmt.Println(pbpData.LiveData.Boxscore.BoxscoreTeams.BoxscoreTeamsHome)
+
+			//fmt.Println(teams)
+			//os.Exit(1)
+
 		}
 
-		//fmt.Println("--", pbpData.LiveData.Plays.PenaltyPlays)
-		//fmt.Println("--", pbpData.LiveData.Plays.PlaysByPeriod)
-		//fmt.Println("--", pbpData.LiveData.Plays.CurrentPlay)
-		//fmt.Println("---", pbpData.LiveData.Plays.AllPlays)
-		//fmt.Println("----", pbpData.LiveData.Plays.AllPlays)
-		//for k,v := range pbpData.LiveData.Plays {
-		// 	fmt.Println(k,v)
-		//}
+		rosters := pbpData.LiveData.Boxscore.BoxscoreTeams
+		//fmt.Println(rosters)
 
+		for k,v := range rosters["away"].BoxscoreTeamsPlayers {
+			fmt.Println(k,v)
+		} 
 
-
-		//fmt.Println(pbpData.GameData.Players.FullName)
-		//fmt.Println(v)
-		// l := len(pbpData.GameData.Players)
-		// fmt.Println(l)
-		// res := pbpData.GameData.Players["ID8474884"].FullName
-		// fmt.Println(res)
-
-		// allplays := pbpData.LiveData.AllPlays
-		// //fmt.Println(allplays)
-		// fmt.Printf("%T", allplays)
-
-		// for k,v := range allplays {
-		// 	fmt.Println(k,v)
-		// }
-
-		// for i := 0; i < len(pbpData.LiveData.AllPlays.scoringPlays); i++ {
-		// 	fmt.Println(i)
-		// }
-
-		// linescore := pbpData.LiveData.LineScore
-		// fmt.Println(linescore)
-
-		// for k,v := range linescore {
-		// 	fmt.Println(k,v)
-		// }
-		fmt.Println(pbpData.LiveData.Linescore)
-
-		//fmt.Println("--", pbpData.LiveData.Boxscore.BoxscoreTeams.BoxscoreTeamsAway.BoxscoreTeamsAwayPlayers)
-		fmt.Println("--", pbpData.LiveData.Boxscore)
-
-		fmt.Println("---", pbpData.LiveData.Decisions)
-
+		//events := pbpData.LiveData.Plays.AllPlays
+		//linescore := pbpData.LiveData.Linescore
+		//fmt.Println(linescore)
+		
+		//fmt.Println(rosters)
 	
 	}
 
@@ -509,6 +495,8 @@ type LiveData struct {
 	AllPlays     AllPlays `json:"allPlays"`
 	Linescore Linescore `json:"linescore"`
 	Boxscore  Boxscore `json:"boxscore"`
+	//BoxscoreTeams [map]stringBoxscoreTeams 
+	//Boxscore  map[string]Boxscore `json:"boxscore"`
 	Decisions Decisions `json:"decisions"`
 	//Boxscore map[string]Boxscore `json:"boxscore"`
 	//Livedata map[string]Livedata `json:'livedata"`
@@ -549,7 +537,6 @@ type PlaysByPeriod []struct {
 }
 
 type CurrentPlay struct {
-	//CurrentPlay CurrentPlay `json:"currentPlay"`
 	CurrentPlayResult CurrentPlayResult `json:"result"`
 	CurrentPlayAbout CurrentPlayAbout `json:"about"`
 	CurrentPlayAboutGoals CurrentPlayAboutGoals `json:"goals"`
@@ -584,11 +571,10 @@ type CurrentPlayCoordinates struct {
 }
 
 type AllPlays []struct {
-	Allplays       AllPlays       `json:"allPlays"`
 	AllPlaysResult AllPlaysResult `json:"result"`
 	AllPlaysAbout  AllPlaysAbout  `json:"about"`
-	AllPlaysAboutGoals  AllPlaysAboutGoals  `json:"goals"`
 	AllPlaysCoordinates AllPlaysCoordinates `json:"coordinates,omitempty"`
+	AllPlaysPlayers AllPlaysPlayers `json:"players,omitempty"`
 	AllPlaysTeam AllPlaysTeam `json:"team,omitempty"`
 }
 
@@ -619,6 +605,7 @@ type AllPlaysAbout struct {
 	PeriodTime          string    `json:"periodTime"`
 	PeriodTimeRemaining string    `json:"periodTimeRemaining"`
 	DateTime            time.Time `json:"dateTime"`
+	AllPlaysAboutGoals  AllPlaysAboutGoals  `json:"goals"`
 }
 
 type AllPlaysAboutGoals struct {
@@ -632,8 +619,7 @@ type AllPlaysCoordinates struct {
 }
 
 type AllPlaysPlayers []struct {
-	AllPlaysPlayers AllPlaysPlayers `json:"players,omitempty"`
-	AllPlaysPlayer AllPlaysPlayer `json:"players,omitempty"`
+	AllPlaysPlayer AllPlaysPlayer `json:"player"` 
 	PlayerType string `json:"playerType"`
 }
 
@@ -753,10 +739,8 @@ type LinescorePowerPlayInfo struct {
 }
 
 type Boxscore struct {
-	BoxscoreTeams BoxscoreTeams `json:"teams"`
+    BoxscoreTeams map[string]BoxscoreTeams `json:"teams"`
 	BoxscoreOfficials BoxscoreOfficials `json:"officials"`
-	//BoxscoreTeamsAwayPlayers map[string]BoxscoreTeamsAwayPlayers `json:"players"`
-	//BoxscoreTeamsAwayPlayers BoxscoreTeamsAwayPlayers `json:"players"`
 }
 
 type BoxscoreOfficials []struct {
@@ -771,84 +755,72 @@ type BoxscoreOfficialsOfficial struct {
 }
 
 type BoxscoreTeams struct {
-	BoxscoreTeamsAway BoxscoreTeamsAway `json:"away"`
-	BoxscoreTeamsHome BoxscoreTeamsHome `json:"home"`
-}
+	//BoxscoreTeamsAway BoxscoreTeamsAway `json:"away"`
 
-type BoxscoreTeamsAway struct {
-	BoxscoreTeamsAwayTeam BoxscoreTeamsAwayTeam `json:"team"`
-	BoxscoreTeamsAwayTeamStats BoxscoreTeamsAwayTeamStats `json:"teamStats"`
-	BoxscoreTeamsAwayPlayers map[string]BoxscoreTeamsAwayPlayer `json:"players"`
+	BoxscoreTeamsTeam BoxscoreTeamsTeam `json:"team"`
+	BoxscoreTeamsTeamStats BoxscoreTeamsTeamStats `json:"teamStats"`
+	BoxscoreTeamsPlayers map[string]BoxscoreTeamsPlayer `json:"players"`
+	BoxscoreTeamsOnIcePlus BoxscoreTeamsOnIcePlus `json:"onIcePlus"`
+	BoxscoreTeamsCoaches BoxscoreTeamsCoaches `json:"coaches"`
+
+	// BoxscoreTeamsHomeTeam BoxscoreTeamsHomeTeam `json:"team"`
+	// BoxscoreTeamsHomeTeamStats BoxscoreTeamsHomeTeamStats `json:"teamStats"`
+	// BoxscoreTeamsHomePlayers map[string]BoxscoreTeamsHomePlayer `json:"players"`
+	// BoxscoreTeamsHomeOnIcePlus BoxscoreTeamsHomeOnIcePlus `json:"onIcePlus"`
+	// BoxscoreTeamsHomeCoaches BoxscoreTeamsHomeCoaches `json:"coaches"`
+
 	Goalies   []int `json:"goalies"`
 	Skaters   []int `json:"skaters"`
-	OnIce     []int `json:"onIce"`
-	BoxscoreTeamsAwayOnIcePlus BoxscoreTeamsAwayOnIcePlus `json:"onIcePlus"`
-	Scratches  []int         `json:"scratches"`
+    OnIce     []int `json:"onIce"`
+    Scratches  []int         `json:"scratches"`
 	PenaltyBox []interface{} `json:"penaltyBox"`
-	BoxscoreTeamsAwayCoaches BoxscoreTeamsAwayCoaches `json:"coaches"`
 
+
+	//BoxscoreTeamsHome BoxscoreTeamsHome `json:"home"`
 }
 
-type BoxscoreTeamsHome struct {
-	BoxscoreTeamsHomeTeam BoxscoreTeamsHomeTeam `json:"team"`
-	BoxscoreTeamsHomeTeamStats BoxscoreTeamsHomeTeamStats `json:"teamStats"`
-	BoxscoreTeamsHomePlayers map[string]BoxscoreTeamsHomePlayer `json:"players"`
-	Goalies   []int `json:"goalies"`
-	Skaters   []int `json:"skaters"`
-	OnIce     []int `json:"onIce"`
-	BoxscoreTeamsHomeOnIcePlus BoxscoreTeamsHomeOnIcePlus `json:"onIcePlus"`
-	Scratches  []int         `json:"scratches"`
-	PenaltyBox []interface{} `json:"penaltyBox"`
-	BoxscoreTeamsHomeCoaches BoxscoreTeamsHomeCoaches `json:"coaches"`
-}
+// type BoxscoreTeams struct {
+// 	//BoxscoreTeamsAwayTeam BoxscoreTeamsAwayTeam `json:"team"`
+// 	//BoxscoreTeamsAwayTeamStats BoxscoreTeamsAwayTeamStats `json:"teamStats"`
+// 	//BoxscoreTeamsAwayPlayers map[string]BoxscoreTeamsAwayPlayer `json:"players"`
+// 	Goalies   []int `json:"goalies"`
+// 	Skaters   []int `json:"skaters"`
+// 	OnIce     []int `json:"onIce"`
+// 	//BoxscoreTeamsAwayOnIcePlus BoxscoreTeamsAwayOnIcePlus `json:"onIcePlus"`
+// 	Scratches  []int         `json:"scratches"`
+// 	PenaltyBox []interface{} `json:"penaltyBox"`
+// 	//BoxscoreTeamsAwayCoaches BoxscoreTeamsAwayCoaches `json:"coaches"`
 
-type BoxscoreTeamsAwayOnIcePlus []struct {
+// }
+
+
+type BoxscoreTeamsOnIcePlus []struct {
 	PlayerID      int `json:"playerId"`
 	ShiftDuration int `json:"shiftDuration"`
 	Stamina       int `json:"stamina"`
 }
 
-type BoxscoreTeamsHomeOnIcePlus []struct {
-	PlayerID      int `json:"playerId"`
-	ShiftDuration int `json:"shiftDuration"`
-	Stamina       int `json:"stamina"`
+
+type BoxscoreTeamsCoaches []struct {
+	BoxscoreTeamsCoachesPerson BoxscoreTeamsCoachesPerson `json:"person"`
+	BoxscoreTeamsCoachesPosition BoxscoreTeamsCoachesPosition `json:"position"`
 }
 
-type BoxscoreTeamsAwayCoaches []struct {
-	BoxscoreTeamsAwayCoachesPerson BoxscoreTeamsAwayCoachesPerson `json:"person"`
-	BoxscoreTeamsAwayCoachesPosition BoxscoreTeamsAwayCoachesPosition `json:"position"`
-}
-
-type BoxscoreTeamsHomeCoaches []struct {
-	BoxscoreTeamsHomeCoachesPerson BoxscoreTeamsHomeCoachesPerson `json:"person"`
-	BoxscoreTeamsHomeCoachesPosition BoxscoreTeamsHomeCoachesPosition `json:"position"`
-}
-
-type BoxscoreTeamsAwayCoachesPerson struct {
+type BoxscoreTeamsCoachesPerson struct {
 	FullName string `json:"fullName"`
 	Link     string `json:"link"`
 }
 
-type BoxscoreTeamsHomeCoachesPerson struct {
-	FullName string `json:"fullName"`
-	Link     string `json:"link"`
-}
 
-type BoxscoreTeamsAwayCoachesPosition struct {
+type BoxscoreTeamsCoachesPosition struct {
 	Code         string `json:"code"`
 	Name         string `json:"name"`
 	Type         string `json:"type"`
 	Abbreviation string `json:"abbreviation"`
 }
 
-type BoxscoreTeamsHomeCoachesPosition struct {
-	Code         string `json:"code"`
-	Name         string `json:"name"`
-	Type         string `json:"type"`
-	Abbreviation string `json:"abbreviation"`
-}
 
-type BoxscoreTeamsAwayTeam struct {
+type BoxscoreTeamsTeam struct {
 	ID           int    `json:"id"`
 	Name         string `json:"name"`
 	Link         string `json:"link"`
@@ -856,23 +828,13 @@ type BoxscoreTeamsAwayTeam struct {
 	TriCode      string `json:"triCode"`
 }
 
-type BoxscoreTeamsHomeTeam struct {
-	ID           int    `json:"id"`
-	Name         string `json:"name"`
-	Link         string `json:"link"`
-	Abbreviation string `json:"abbreviation"`
-	TriCode      string `json:"triCode"`
+
+type BoxscoreTeamsTeamStats struct {
+	BoxscoreTeamTeamStatsTeamSkaterStats BoxscoreTeamTeamStatsTeamSkaterStats `json:"teamSkaterStats"`
 }
 
-type BoxscoreTeamsAwayTeamStats struct {
-	BoxscoreTeamAwayTeamStatsTeamSkaterStats BoxscoreTeamAwayTeamStatsTeamSkaterStats `json:"teamSkaterStats"`
-}
 
-type BoxscoreTeamsHomeTeamStats struct {
-	BoxscoreTeamHomeTeamStatsTeamSkaterStats BoxscoreTeamHomeTeamStatsTeamSkaterStats `json:"teamSkaterStats"`
-}
-
-type BoxscoreTeamAwayTeamStatsTeamSkaterStats struct {
+type BoxscoreTeamTeamStatsTeamSkaterStats struct {
 	Goals                  int     `json:"goals"`
 	Pim                    int     `json:"pim"`
 	Shots                  int     `json:"shots"`
@@ -886,47 +848,23 @@ type BoxscoreTeamAwayTeamStatsTeamSkaterStats struct {
 	Hits                   int     `json:"hits"`
 }
 
-type BoxscoreTeamHomeTeamStatsTeamSkaterStats struct {
-	Goals                  int     `json:"goals"`
-	Pim                    int     `json:"pim"`
-	Shots                  int     `json:"shots"`
-	PowerPlayPercentage    string  `json:"powerPlayPercentage"`
-	PowerPlayGoals         float64 `json:"powerPlayGoals"`
-	PowerPlayOpportunities float64 `json:"powerPlayOpportunities"`
-	FaceOffWinPercentage   string  `json:"faceOffWinPercentage"`
-	Blocked                int     `json:"blocked"`
-	Takeaways              int     `json:"takeaways"`
-	Giveaways              int     `json:"giveaways"`
-	Hits                   int     `json:"hits"`
-}
 
-type BoxscoreTeamsAwayPlayers struct {
-	BoxscoreTeamsAwayPlayer BoxscoreTeamsAwayPlayer `json:"players"`
+type BoxscoreTeamsPlayers struct {
+	BoxscoreTeamsPlayer BoxscoreTeamsPlayer `json:"players"`
 
 }
 
-type BoxscoreTeamsHomePlayers struct {
-	BoxscoreTeamsHomePlayer BoxscoreTeamsHomePlayer `json:"players"`
 
-}
-
-type BoxscoreTeamsAwayPlayer struct {
-	BoxscoreTeamsAwayPlayerPerson BoxscoreTeamsAwayPlayerPerson `json:"person"`
+type BoxscoreTeamsPlayer struct {
+	BoxscoreTeamsPlayerPerson BoxscoreTeamsPlayerPerson `json:"person"`
 	JerseyNumber string `json:"jerseyNumber"`
-	BoxscoreTeamsAwayPlayerPosition BoxscoreTeamsAwayPlayerPosition `json:"position"`
-	BoxscoreTeamsAwayPlayerStats BoxscoreTeamsAwayPlayerStats `json:"stats"`
+	BoxscoreTeamsPlayerPosition BoxscoreTeamsPlayerPosition `json:"position"`
+	BoxscoreTeamsPlayerStats BoxscoreTeamsPlayerStats `json:"stats"`
 
 }
 
-type BoxscoreTeamsHomePlayer struct {
-	BoxscoreTeamsHomePlayerPerson BoxscoreTeamsHomePlayerPerson `json:"person"`
-	JerseyNumber string `json:"jerseyNumber"`
-	BoxscoreTeamsHomePlayerPosition BoxscoreTeamsHomePlayerPosition `json:"position"`
-	BoxscoreTeamsHomePlayerStats BoxscoreTeamsHomePlayerStats `json:"stats"`
 
-}
-
-type BoxscoreTeamsAwayPlayerPerson struct {
+type BoxscoreTeamsPlayerPerson struct {
 	ID            int    `json:"id"`
 	FullName      string `json:"fullName"`
 	Link          string `json:"link"`
@@ -934,39 +872,20 @@ type BoxscoreTeamsAwayPlayerPerson struct {
 	RosterStatus  string `json:"rosterStatus"`
 }
 
-type BoxscoreTeamsHomePlayerPerson struct {
-	ID            int    `json:"id"`
-	FullName      string `json:"fullName"`
-	Link          string `json:"link"`
-	ShootsCatches string `json:"shootsCatches"`
-	RosterStatus  string `json:"rosterStatus"`
-}
-
-type BoxscoreTeamsAwayPlayerPosition struct {
+type BoxscoreTeamsPlayerPosition struct {
 	Code         string `json:"code"`
 	Name         string `json:"name"`
 	Type         string `json:"type"`
 	Abbreviation string `json:"abbreviation"`
 }
 
-type BoxscoreTeamsHomePlayerPosition struct {
-	Code         string `json:"code"`
-	Name         string `json:"name"`
-	Type         string `json:"type"`
-	Abbreviation string `json:"abbreviation"`
+type BoxscoreTeamsPlayerStats struct {
+	BoxscoreTeamsPlayersStatsSkaterStats BoxscoreTeamsPlayersStatsSkaterStats `json:"skaterStats"`
+	BoxscoreTeamsPlayersStatsGoalieStats BoxscoreTeamsPlayersStatsGoalieStats `json:"goalieStats"`
 }
 
-type BoxscoreTeamsAwayPlayerStats struct {
-	BoxscoreTeamsAwayPlayersStatsSkaterStats BoxscoreTeamsAwayPlayersStatsSkaterStats `json:"skaterStats"`
-	BoxscoreTeamsAwayPlayersStatsGoalieStats BoxscoreTeamsAwayPlayersStatsGoalieStats `json:"goalieStats"`
-}
 
-type BoxscoreTeamsHomePlayerStats struct {
-	BoxscoreTeamsHomePlayersStatsSkaterStats BoxscoreTeamsHomePlayersStatsSkaterStats `json:"skaterStats"`
-	BoxscoreTeamsHomePlayersStatsGoalieStats BoxscoreTeamsHomePlayersStatsGoalieStats `json:"goalieStats"`
-}
-
-type BoxscoreTeamsAwayPlayersStatsSkaterStats struct {
+type BoxscoreTeamsPlayersStatsSkaterStats struct {
 	TimeOnIce            string `json:"timeOnIce"`
 	Assists              int    `json:"assists"`
 	Goals                int    `json:"goals"`
@@ -988,29 +907,8 @@ type BoxscoreTeamsAwayPlayersStatsSkaterStats struct {
 	ShortHandedTimeOnIce string `json:"shortHandedTimeOnIce"`
 }
 
-type BoxscoreTeamsHomePlayersStatsSkaterStats struct {
-	TimeOnIce            string `json:"timeOnIce"`
-	Assists              int    `json:"assists"`
-	Goals                int    `json:"goals"`
-	Shots                int    `json:"shots"`
-	Hits                 int    `json:"hits"`
-	PowerPlayGoals       int    `json:"powerPlayGoals"`
-	PowerPlayAssists     int    `json:"powerPlayAssists"`
-	PenaltyMinutes       int    `json:"penaltyMinutes"`
-	FaceOffWins          int    `json:"faceOffWins"`
-	FaceoffTaken         int    `json:"faceoffTaken"`
-	Takeaways            int    `json:"takeaways"`
-	Giveaways            int    `json:"giveaways"`
-	ShortHandedGoals     int    `json:"shortHandedGoals"`
-	ShortHandedAssists   int    `json:"shortHandedAssists"`
-	Blocked              int    `json:"blocked"`
-	PlusMinus            int    `json:"plusMinus"`
-	EvenTimeOnIce        string `json:"evenTimeOnIce"`
-	PowerPlayTimeOnIce   string `json:"powerPlayTimeOnIce"`
-	ShortHandedTimeOnIce string `json:"shortHandedTimeOnIce"`
-}
 
-type BoxscoreTeamsAwayPlayersStatsGoalieStats struct {
+type BoxscoreTeamsPlayersStatsGoalieStats struct {
 	TimeOnIce                  string  `json:"timeOnIce"`
 	Assists                    int     `json:"assists"`
 	Goals                      int     `json:"goals"`
@@ -1028,24 +926,3 @@ type BoxscoreTeamsAwayPlayersStatsGoalieStats struct {
 	PowerPlaySavePercentage    float64 `json:"powerPlaySavePercentage"`
 	EvenStrengthSavePercentage float64 `json:"evenStrengthSavePercentage"`
 }
-
-type BoxscoreTeamsHomePlayersStatsGoalieStats struct {
-	TimeOnIce                  string  `json:"timeOnIce"`
-	Assists                    int     `json:"assists"`
-	Goals                      int     `json:"goals"`
-	Pim                        int     `json:"pim"`
-	Shots                      int     `json:"shots"`
-	Saves                      int     `json:"saves"`
-	PowerPlaySaves             int     `json:"powerPlaySaves"`
-	ShortHandedSaves           int     `json:"shortHandedSaves"`
-	EvenSaves                  int     `json:"evenSaves"`
-	ShortHandedShotsAgainst    int     `json:"shortHandedShotsAgainst"`
-	EvenShotsAgainst           int     `json:"evenShotsAgainst"`
-	PowerPlayShotsAgainst      int     `json:"powerPlayShotsAgainst"`
-	Decision                   string  `json:"decision"`
-	SavePercentage             float64 `json:"savePercentage"`
-	PowerPlaySavePercentage    float64 `json:"powerPlaySavePercentage"`
-	EvenStrengthSavePercentage float64 `json:"evenStrengthSavePercentage"`
-}
-
-
