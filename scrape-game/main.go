@@ -256,20 +256,14 @@ func main() {
 		
 		//for k,_ := range pbpData.GameData.Players {
 
-		players := pbpData.GameData.Players
-		
+		players := pbpData.GameData.Players		
 
 		// create tempDict to modify the key and reassign back to players map
 
-		tempMap := map[string]Player{}
+		tempPlayers := make(map[string]Player, len(players)) 
 		for pId,v := range players {
-			//fmt.Println(pId)
-			//fmt.Printf("%v", v)
-			//fmt.Println(k[2:])
 			pId = pId[2:]
-			//fmt.Println(pId)
-			tempMap[pId] = v
-			////pIds = append(pIds, pId)
+			tempPlayers[pId] = v
 		}
 
 		// clear original players map
@@ -278,27 +272,44 @@ func main() {
 		}
 		
 		// re-create players map with updated key from tempMap
-		for k,v := range tempMap {
+		for k,v := range tempPlayers {
 			//fmt.Println(k,v)
 			players[k] = v
 		}
 
-		for k,v := range players {
-			fmt.Println(k,v)
+		// clear tempPlayers map
+		for k := range tempPlayers {
+			delete(tempPlayers, k)
 		}
 
-		os.Exit(1)
-		//fmt.Printf("%T", players)
+		//for k,v := range players {
+		//	fmt.Println(k,v)
+		//}
 
-		//fmt.Println(pIds)
+		//os.Exit(1)
 
 		teams := pbpData.GameData.Teams
 
 		// Prepare team output
 
-		for _, v := range teams { 
-			outTeamsIceSit := strings.ToLower(v.Abbreviation) // iceSit = 'home' or 'away
-			fmt.Println(outTeamsIceSit)
+		
+
+		for k, iceSit := range teams {
+			fmt.Println("iceSit: ", k, iceSit)
+			//iceSit = strings.ToLower(iceSit.Abbreviation) 
+			outTeamsIceSitAbbrev := make(map[Team]string)
+			//outTeamsIceSit[iceSit] = strings.ToLower(iceSit.Abbreviation)  
+			//outTeamsIceSit[iceSit.Abbreviation] = strings.ToLower(iceSit.Abbreviation)
+			//fmt.Println(outTeamsIceSit[iceSit.Abbreviation])
+			outTeamsIceSitAbbrev[iceSit] = strings.ToLower(iceSit.Abbreviation)
+			fmt.Println(outTeamsIceSitAbbrev[iceSit])
+			//for k,v := range outTeamsIceSit{
+				//outTeamsIceSit[iceSit] = strings.ToLower(iceSit.Abbreviation)
+			//	fmt.Println(k,v)
+			//}
+			//outTeamsIceSit := strings.ToLower(iceSit.Abbreviation) // iceSit = 'home' or 'away
+			////fmt.Println(outTeamsIceSit)
+			os.Exit(1)
 			
 			for _, strSit := range strengthSits {
 				outTeamsIceSitStrSit := strSit
