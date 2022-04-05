@@ -1,27 +1,26 @@
 package main
 
 import (
-	"time"
 	"encoding/json"
-	"net/http"
-	"io/ioutil"
-	"strings"
-	"strconv"
 	"fmt"
+	"io/ioutil"
+	"net/http"
 	"os"
+	"strconv"
+	"strings"
+	"time"
 )
-
 
 func main() {
 	//i, err := toSecs("05:02")
 	//if err == nil {
 	//	fmt.Println(i)
 	//}
-	
+
 	// Get user arguments
-	seasonArg := os.Args[1]					// Specify 20142015 for the 2014-2015 season
-	shortSeasonArg :=  seasonArg[0:4]		// The starting year of the season
-	gameArg := os.Args[2]					// Specify a gameId 20100, or a range 20100-20105
+	seasonArg := os.Args[1]          // Specify 20142015 for the 2014-2015 season
+	shortSeasonArg := seasonArg[0:4] // The starting year of the season
+	gameArg := os.Args[2]            // Specify a gameId 20100, or a range 20100-20105
 	//gameIds = []							// List of gameIds to scrape
 
 	if len(os.Args) < 3 {
@@ -38,10 +37,10 @@ func main() {
 		fmt.Println("Enter a gameId or gameId range, ie: 20100 or 20100-20105")
 		os.Exit(1)
 	}
-	
+
 	// List of season+gameIds that won't use the json pbp
-	//fallbackGameIds = ["20152016-20823"]	
-	//fallbackGameIds = []		
+	//fallbackGameIds = ["20152016-20823"]
+	//fallbackGameIds = []
 
 	var gameIDs []int
 
@@ -82,7 +81,7 @@ func main() {
 
 	// Scrape data for each game
 
- 	// Converts full team names used in json (e.g., the event team) to json abbreviations (e.g., sjs)
+	// Converts full team names used in json (e.g., the event team) to json abbreviations (e.g., sjs)
 	teamAbbrevs := map[string]string{}
 
 	teamAbbrevs["carolina hurricanes"] = "car"
@@ -116,6 +115,7 @@ func main() {
 	teamAbbrevs["san jose sharks"] = "sjs"
 	teamAbbrevs["vancouver canucks"] = "van"
 	teamAbbrevs["vegas golden knights"] = "vgk"
+	teamAbbrevs["seattle kraken"] = "sea"
 
 	//fmt.Println(teamAbbrevs)
 
@@ -149,7 +149,7 @@ func main() {
 
 		// Download input files
 
-		inDir := "nhl-data/"								// Where the input files are stored
+		inDir := "nhl-data/" // Where the input files are stored
 		//outDir := "data-for-db/"							// Where the output files (to be written to database) are stored
 
 		// Input file urls
@@ -159,7 +159,7 @@ func main() {
 		shiftJsonUrl := "https://api.nhle.com/stats/rest/en/shiftcharts?cayenneExp=gameId=" + shortSeasonArg + "0" + strconv.Itoa(gameID)
 		pbpJsonUrl := "https://statsapi.web.nhl.com/api/v1/game/" + shortSeasonArg + "0" + strconv.Itoa(gameID) + "/feed/live"
 		fmt.Println("Shift JSON: ", shiftJsonUrl)
-		fmt.Println("PBP JSON: ",  pbpJsonUrl)
+		fmt.Println("PBP JSON: ", pbpJsonUrl)
 
 		// Downloaded input file names
 		shiftJson := seasonArg + "-" + strconv.Itoa(gameID) + "-shifts.json"
@@ -188,7 +188,7 @@ func main() {
 				response, err := http.Get(fileUrls[i])
 				if err != nil {
 					panic(err.Error())
-	
+
 				}
 				//fmt.Print(response)
 
@@ -197,7 +197,7 @@ func main() {
 				defer response.Body.Close()
 				body, err := ioutil.ReadAll(response.Body)
 				if err != nil {
-    				panic(err.Error())
+					panic(err.Error())
 				}
 
 				// prints body, a byte slice ([]byte) as a string
@@ -207,10 +207,10 @@ func main() {
 					panic(err.Error())
 				}
 
-				err = ioutil.WriteFile(inDir + f, []byte(body), 0644)
-    			if err != nil {
+				err = ioutil.WriteFile(inDir+f, []byte(body), 0644)
+				if err != nil {
 					panic(err.Error())
-    			}
+				}
 				//fmt.Printf("%s\n", body)
 				//fmt.Printf("%T\n", body)
 
@@ -231,37 +231,29 @@ func main() {
 		var pbpData Data
 
 		file, err := ioutil.ReadFile(inDir + pbpJson)
-		
+
 		if err != nil {
-        	panic(err.Error())
-    	}
-    	err = json.Unmarshal(file, &pbpData)
-    	if err != nil {
-        	panic(err.Error())
+			panic(err.Error())
+		}
+		err = json.Unmarshal(file, &pbpData)
+		if err != nil {
+			panic(err.Error())
 		}
 
 		//fmt.Println(pbpData)
-		
+
 		gameDateTime := pbpData.GameData.DateTime.DateTime
 		//gameEndDateTime := pbpData.GameData.DateTime.EndDateTime
 		sGameDate := gameDateTime.Format("20060102150405")
 		iGameDate, err := strconv.Atoi(sGameDate)
 		fmt.Println(iGameDate)
-	
 
-		// for k,v := range players {
-		// 	fmt.Println(k,v)
-		// }
-		//fmt.Println(players)
-		
-		//for k,_ := range pbpData.GameData.Players {
-
-		players := pbpData.GameData.Players		
+		players := pbpData.GameData.Players
 
 		// create tempDict to modify the key and reassign back to players map
 
-		tempPlayers := make(map[string]Player, len(players)) 
-		for pId,v := range players {
+		tempPlayers := make(map[string]Player, len(players))
+		for pId, v := range players {
 			pId = pId[2:]
 			tempPlayers[pId] = v
 		}
@@ -270,9 +262,9 @@ func main() {
 		for k := range players {
 			delete(players, k)
 		}
-		
+
 		// re-create players map with updated key from tempMap
-		for k,v := range tempPlayers {
+		for k, v := range tempPlayers {
 			//fmt.Println(k,v)
 			players[k] = v
 		}
@@ -282,103 +274,93 @@ func main() {
 			delete(tempPlayers, k)
 		}
 
-		//for k,v := range players {
-		//	fmt.Println(k,v)
-		//}
-
-		//os.Exit(1)
+		// Prepare team output
 
 		teams := pbpData.GameData.Teams
 
-		// Prepare team output
-
-		
-
-		for k, iceSit := range teams {
-			fmt.Println("iceSit: ", k, iceSit)
-			//iceSit = strings.ToLower(iceSit.Abbreviation) 
+		for _, iceSit := range teams {
 			outTeamsIceSitAbbrev := make(map[Team]string)
-			//outTeamsIceSit[iceSit] = strings.ToLower(iceSit.Abbreviation)  
-			//outTeamsIceSit[iceSit.Abbreviation] = strings.ToLower(iceSit.Abbreviation)
-			//fmt.Println(outTeamsIceSit[iceSit.Abbreviation])
 			outTeamsIceSitAbbrev[iceSit] = strings.ToLower(iceSit.Abbreviation)
-			fmt.Println(outTeamsIceSitAbbrev[iceSit])
-			//for k,v := range outTeamsIceSit{
-				//outTeamsIceSit[iceSit] = strings.ToLower(iceSit.Abbreviation)
-			//	fmt.Println(k,v)
-			//}
-			//outTeamsIceSit := strings.ToLower(iceSit.Abbreviation) // iceSit = 'home' or 'away
-			////fmt.Println(outTeamsIceSit)
-			os.Exit(1)
-			
-			for _, strSit := range strengthSits {
-				outTeamsIceSitStrSit := strSit
-				fmt.Println(outTeamsIceSitStrSit)
-				
-				for _, scSit := range scoreSits {
-					outTeamsIceSitScSit := scSit
-					fmt.Println(outTeamsIceSitScSit)
-					
+			//fmt.Println(outTeamsIceSitAbbrev[iceSit])
+
+			// Initialize stats
+			var teamStatsSlice []string
+
+			for i, strSit := range strengthSits {
+				strengthSitsMap := make(map[int]string, len(strengthSits))
+				strengthSitsMap[i] = strSit
+				////fmt.Println(strengthSitsMap)
+				//fmt.Println(strSit)
+				for i, scSit := range scoreSits {
+					scoreSitsMap := make(map[int]int, len(scoreSits))
+					scoreSitsMap[i] = scSit
+					//fmt.Println(scoreSitsMap)
+					//fmt.Println(scSit)
 					for _, stat := range teamStats {
-						outTeamsiceSitStrSitScSitStat := stat
-						outTeamsiceSitStrSitScSitStat = "0"
-						fmt.Println("--", outTeamsiceSitStrSitScSitStat)
-						
+						stat = "0"
+						teamStatsSlice = append(teamStatsSlice, stat)
+						//fmt.Println("--", outTeamsiceSitStrSitScSitStat)
+						//fmt.Println(stat)
 
 					}
-					
 
 				}
-				
 			}
 		}
+		//os.Exit(1)
 
 		// Prepare players output
 		// value prints in curly braces because it's a struct
-		
-		//rosters := pbpData.LiveData.Boxscore.BoxscoreTeams
-		//rosters := pbpData.LiveData.Boxscore
-
-		for _, pId := range players {
-			outPlayersPidPrimaryPos := strings.ToLower(pId.PrimaryPosition.Abbreviation)
-			fmt.Println(outPlayersPidPrimaryPos)
-			outPlayersPidFirstName := pId.FirstName
-			fmt.Println(outPlayersPidFirstName)
-			outPlayersPidLastName := pId.LastName
-			fmt.Println(outPlayersPidLastName)
-
-			// Get the player's team, iceSit, and jersey number
-
-			// for iceSit in rosters:	# 'iceSit' will be 'home' or 'away'
-			// 	rosterKey = "ID" + str(pId)
-			// 	if rosterKey in rosters[iceSit]["players"]:
-			// 		outPlayers[pId]["team"] = outTeams[iceSit]["abbrev"]
-			// 		outPlayers[pId]["iceSit"] = iceSit
-			// 		outPlayers[pId]["jersey"] = rosters[iceSit]["players"][rosterKey]["jerseyNumber"]
-			// for k, iceSit := range rosters {
-			// 	fmt.Println("---", k, iceSit)
-			// }
-
-			//fmt.Println(pbpData.LiveData.Boxscore.BoxscoreTeams.BoxscoreTeamsHome)
-
-			//fmt.Println(teams)
-			//os.Exit(1)
-
-		}
+		// Remove inactive players from the boxscore's player's list
 
 		rosters := pbpData.LiveData.Boxscore.BoxscoreTeams
-		//fmt.Println(rosters)
 
-		for k,v := range rosters["away"].BoxscoreTeamsPlayers {
-			fmt.Println(k,v)
-		} 
+		for iceSit := range rosters {
+			//fmt.Println(iceSit)
+			for _, v := range rosters[iceSit].BoxscoreTeamsPlayers {
+				if v.BoxscoreTeamsPlayerPosition.Name == "Unknown" {
+					scratchedPlayer := v.BoxscoreTeamsPlayerPosition.Name
+					//fmt.Println("Deleting player from map: ", player)
+					delete(rosters[iceSit].BoxscoreTeamsPlayers, scratchedPlayer)
+				}
+			}
+		}
+
+		// Prepare the output dictionary outPlayer
+		for _, pId := range players {
+			outPlayersPidPrimaryPos := strings.ToLower(pId.PrimaryPosition.Abbreviation)
+			//fmt.Println(outPlayersPidPrimaryPos)
+			outPlayersPidFirstName := pId.FirstName
+			//fmt.Println(outPlayersPidFirstName)
+			outPlayersPidLastName := pId.LastName
+			
+			fmt.Println(outPlayersPidPrimaryPos, outPlayersPidFirstName, outPlayersPidLastName)
+
+			//rosterKeyMap := make(map[string]string)
+			for iceSit := range rosters {
+				for k, v := range rosters[iceSit].BoxscoreTeamsPlayers {
+
+					rosterKey := v.BoxscoreTeamsPlayerPerson.ID
+					sRosterKey := strconv.Itoa(rosterKey)
+					newRosterKey := "ID" + sRosterKey
+
+					if newRosterKey == k {
+						//fmt.Println("key: ", k, "newRosterKey: ", newRosterKey)
+						// outPlayersPidTeam := strings.ToLower(teams[iceSit].Abbreviation)
+						// outPlayersPidIcesit := iceSit
+						// outPlayersPidJersey := v.JerseyNumber
+						// fmt.Println(outPlayersPidTeam, outPlayersPidIcesit, outPlayersPidJersey)
+						
+						// #fmt.Println(strings.ToLower(teams[iceSit].Abbreviation), iceSit, v.JerseyNumber)
+					}
+				}
+			}
+		}
+		//os.Exit(1)
 
 		//events := pbpData.LiveData.Plays.AllPlays
 		//linescore := pbpData.LiveData.Linescore
-		//fmt.Println(linescore)
-		
-		//fmt.Println(rosters)
-	
+
 	}
 
 }
@@ -386,18 +368,17 @@ func main() {
 type Data struct {
 	Copyright string   `json:"copyright"`
 	GamePk    int      `json:"gamePk"`
-    Link      string   `json:"link"`
+	Link      string   `json:"link"`
 	GameData  GameData `json:"gameData"`
 	LiveData  LiveData `json:"liveData"`
 }
 
 type GameData struct {
-	Players map[string]Player `json:"players"`
-	DateTime Datetime `json:"dateTime"`
-	Game Game `json:"game"`
-	Status Status `json:"status"`
-	Teams map[string]Team `json:"teams"`
-
+	Players  map[string]Player `json:"players"`
+	DateTime Datetime          `json:"dateTime"`
+	Game     Game              `json:"game"`
+	Status   Status            `json:"status"`
+	Teams    map[string]Team   `json:"teams"`
 }
 
 type Game struct {
@@ -420,9 +401,9 @@ type Status struct {
 }
 
 type Team struct {
-	ID    int    `json:"id"`
-	Name  string `json:"name"`
-	Link  string `json:"link"`
+	ID              int    `json:"id"`
+	Name            string `json:"name"`
+	Link            string `json:"link"`
 	Abbreviation    string `json:"abbreviation"`
 	TriCode         string `json:"triCode"`
 	TeamName        string `json:"teamName"`
@@ -432,7 +413,7 @@ type Team struct {
 	OfficialSiteURL string `json:"officialSiteUrl"`
 	FranchiseID     int    `json:"franchiseId"`
 	Active          bool   `json:"active"`
-	Venue struct {
+	Venue           struct {
 		ID       int    `json:"id"`
 		Name     string `json:"name"`
 		Link     string `json:"link"`
@@ -443,7 +424,7 @@ type Team struct {
 			Tz     string `json:"tz"`
 		} `json:"timeZone"`
 	} `json:"venue"`
-	Division        struct {
+	Division struct {
 		ID   int    `json:"id"`
 		Name string `json:"name"`
 		Link string `json:"link"`
@@ -461,28 +442,28 @@ type Team struct {
 }
 
 type Player struct {
-	ID                 int    `json:"id"`
-    FullName           string `json:"fullName"`
-    Link               string `json:"link"`
-    FirstName          string `json:"firstName"`
-    LastName           string `json:"lastName"`
-    PrimaryNumber      string `json:"primaryNumber"`
-    BirthDate          string `json:"birthDate"`
-    CurrentAge         int    `json:"currentAge"`
-    BirthCity          string `json:"birthCity"`
-    BirthStateProvince string `json:"birthStateProvince"`
-    BirthCountry       string `json:"birthCountry"`
-    Nationality        string `json:"nationality"`
-    Height             string `json:"height"`
-    Weight             int    `json:"weight"`
-    Active             bool   `json:"active"`
-    AlternateCaptain   bool   `json:"alternateCaptain"`
-    Captain            bool   `json:"captain"`
-    Rookie             bool   `json:"rookie"`
-    ShootsCatches      string `json:"shootsCatches"`
-    RosterStatus       string `json:"rosterStatus"`
-	CurrentTeam		   CurrentTeam `json:"currentTeam"`
-    PrimaryPosition PrimaryPosition `json:"primaryPosition"`
+	ID                 int             `json:"id"`
+	FullName           string          `json:"fullName"`
+	Link               string          `json:"link"`
+	FirstName          string          `json:"firstName"`
+	LastName           string          `json:"lastName"`
+	PrimaryNumber      string          `json:"primaryNumber"`
+	BirthDate          string          `json:"birthDate"`
+	CurrentAge         int             `json:"currentAge"`
+	BirthCity          string          `json:"birthCity"`
+	BirthStateProvince string          `json:"birthStateProvince"`
+	BirthCountry       string          `json:"birthCountry"`
+	Nationality        string          `json:"nationality"`
+	Height             string          `json:"height"`
+	Weight             int             `json:"weight"`
+	Active             bool            `json:"active"`
+	AlternateCaptain   bool            `json:"alternateCaptain"`
+	Captain            bool            `json:"captain"`
+	Rookie             bool            `json:"rookie"`
+	ShootsCatches      string          `json:"shootsCatches"`
+	RosterStatus       string          `json:"rosterStatus"`
+	CurrentTeam        CurrentTeam     `json:"currentTeam"`
+	PrimaryPosition    PrimaryPosition `json:"primaryPosition"`
 }
 
 type CurrentTeam struct {
@@ -502,11 +483,11 @@ type PrimaryPosition struct {
 type LiveData struct {
 	//Plays map[string]interface{} `json:"plays"`
 	//Plays map[string]Plays `json:"plays"`
-	Plays        Plays    `json:"plays"`
-	AllPlays     AllPlays `json:"allPlays"`
+	Plays     Plays     `json:"plays"`
+	AllPlays  AllPlays  `json:"allPlays"`
 	Linescore Linescore `json:"linescore"`
-	Boxscore  Boxscore `json:"boxscore"`
-	//BoxscoreTeams [map]stringBoxscoreTeams 
+	Boxscore  Boxscore  `json:"boxscore"`
+	//BoxscoreTeams [map]stringBoxscoreTeams
 	//Boxscore  map[string]Boxscore `json:"boxscore"`
 	Decisions Decisions `json:"decisions"`
 	//Boxscore map[string]Boxscore `json:"boxscore"`
@@ -516,8 +497,7 @@ type LiveData struct {
 
 type Decisions struct {
 	LiveDataDecisionsWinner LiveDataDecisionsWinner `json:"winner"`
-	LiveDataDecisionsLoser LiveDataDecisionsLoser `json:"loser"`
-
+	LiveDataDecisionsLoser  LiveDataDecisionsLoser  `json:"loser"`
 }
 
 type LiveDataDecisionsWinner struct {
@@ -532,13 +512,12 @@ type LiveDataDecisionsLoser struct {
 	Link     string `json:"link"`
 }
 
-
 type Plays struct {
-	AllPlays AllPlays `json:"allPlays"`
-	ScoringPlays  []int `json:"scoringPlays"`
-	PenaltyPlays  []int `json:"penaltyPlays"`
+	AllPlays      AllPlays      `json:"allPlays"`
+	ScoringPlays  []int         `json:"scoringPlays"`
+	PenaltyPlays  []int         `json:"penaltyPlays"`
 	PlaysByPeriod PlaysByPeriod `json:"playsByPeriod"`
-	CurrentPlay CurrentPlay `json:"currentPlay"`
+	CurrentPlay   CurrentPlay   `json:"currentPlay"`
 }
 
 type PlaysByPeriod []struct {
@@ -548,9 +527,9 @@ type PlaysByPeriod []struct {
 }
 
 type CurrentPlay struct {
-	CurrentPlayResult CurrentPlayResult `json:"result"`
-	CurrentPlayAbout CurrentPlayAbout `json:"about"`
-	CurrentPlayAboutGoals CurrentPlayAboutGoals `json:"goals"`
+	CurrentPlayResult      CurrentPlayResult      `json:"result"`
+	CurrentPlayAbout       CurrentPlayAbout       `json:"about"`
+	CurrentPlayAboutGoals  CurrentPlayAboutGoals  `json:"goals"`
 	CurrentPlayCoordinates CurrentPlayCoordinates `json:"coordinates"`
 }
 
@@ -578,27 +557,26 @@ type CurrentPlayAboutGoals struct {
 }
 
 type CurrentPlayCoordinates struct {
-
 }
 
 type AllPlays []struct {
-	AllPlaysResult AllPlaysResult `json:"result"`
-	AllPlaysAbout  AllPlaysAbout  `json:"about"`
+	AllPlaysResult      AllPlaysResult      `json:"result"`
+	AllPlaysAbout       AllPlaysAbout       `json:"about"`
 	AllPlaysCoordinates AllPlaysCoordinates `json:"coordinates,omitempty"`
-	AllPlaysPlayers AllPlaysPlayers `json:"players,omitempty"`
-	AllPlaysTeam AllPlaysTeam `json:"team,omitempty"`
+	AllPlaysPlayers     AllPlaysPlayers     `json:"players,omitempty"`
+	AllPlaysTeam        AllPlaysTeam        `json:"team,omitempty"`
 }
 
 type AllPlaysResult struct {
-	Event       string `json:"event"`
-	EventCode   string `json:"eventCode"`
-	EventTypeID string `json:"eventTypeId"`
-	Description string `json:"description"`
-	SecondaryType string `json:"secondaryType"`
-	PenaltySeverity string `json:"penaltySeverity"`
-	PenaltyMinutes  int    `json:"penaltyMinutes"`
-	GameWinningGoal bool `json:"gameWinningGoal"`
-	EmptyNet        bool `json:"emptyNet"`
+	Event                  string                 `json:"event"`
+	EventCode              string                 `json:"eventCode"`
+	EventTypeID            string                 `json:"eventTypeId"`
+	Description            string                 `json:"description"`
+	SecondaryType          string                 `json:"secondaryType"`
+	PenaltySeverity        string                 `json:"penaltySeverity"`
+	PenaltyMinutes         int                    `json:"penaltyMinutes"`
+	GameWinningGoal        bool                   `json:"gameWinningGoal"`
+	EmptyNet               bool                   `json:"emptyNet"`
 	AllPlaysResultStrength AllPlaysResultStrength `json:"strength"`
 }
 
@@ -608,15 +586,15 @@ type AllPlaysResultStrength struct {
 }
 
 type AllPlaysAbout struct {
-	EventIdx            int       `json:"eventIdx"`
-	EventID             int       `json:"eventId"`
-	Period              int       `json:"period"`
-	PeriodType          string    `json:"periodType"`
-	OrdinalNum          string    `json:"ordinalNum"`
-	PeriodTime          string    `json:"periodTime"`
-	PeriodTimeRemaining string    `json:"periodTimeRemaining"`
-	DateTime            time.Time `json:"dateTime"`
-	AllPlaysAboutGoals  AllPlaysAboutGoals  `json:"goals"`
+	EventIdx            int                `json:"eventIdx"`
+	EventID             int                `json:"eventId"`
+	Period              int                `json:"period"`
+	PeriodType          string             `json:"periodType"`
+	OrdinalNum          string             `json:"ordinalNum"`
+	PeriodTime          string             `json:"periodTime"`
+	PeriodTimeRemaining string             `json:"periodTimeRemaining"`
+	DateTime            time.Time          `json:"dateTime"`
+	AllPlaysAboutGoals  AllPlaysAboutGoals `json:"goals"`
 }
 
 type AllPlaysAboutGoals struct {
@@ -630,8 +608,8 @@ type AllPlaysCoordinates struct {
 }
 
 type AllPlaysPlayers []struct {
-	AllPlaysPlayer AllPlaysPlayer `json:"player"` 
-	PlayerType string `json:"playerType"`
+	AllPlaysPlayer AllPlaysPlayer `json:"player"`
+	PlayerType     string         `json:"playerType"`
 }
 
 type AllPlaysPlayer struct {
@@ -648,25 +626,24 @@ type AllPlaysTeam struct {
 }
 
 type Linescore struct {
-	CurrentPeriod              int    `json:"currentPeriod"`
-	CurrentPeriodOrdinal       string `json:"currentPeriodOrdinal"`
-	CurrentPeriodTimeRemaining string `json:"currentPeriodTimeRemaining"`
-	LinescorePeriods LinescorePeriods `json:"periods"`
-	LinescoreShootoutInfo LinescoreShootoutInfo `json:"shootoutInfo"`
-	LinescoreTeams LinescoreTeams `json:"teams"`
-	PowerPlayStrength string `json:"powerPlayStrength"`
-	HasShootout       bool   `json:"hasShootout"`
-	LinescoreIntermissionInfo LinescoreIntermissionInfo `json:"intermissionInfo"`
-	LinescorePowerPlayInfo LinescorePowerPlayInfo `json:"powerPlayInfo"`
-	
+	CurrentPeriod              int                       `json:"currentPeriod"`
+	CurrentPeriodOrdinal       string                    `json:"currentPeriodOrdinal"`
+	CurrentPeriodTimeRemaining string                    `json:"currentPeriodTimeRemaining"`
+	LinescorePeriods           LinescorePeriods          `json:"periods"`
+	LinescoreShootoutInfo      LinescoreShootoutInfo     `json:"shootoutInfo"`
+	LinescoreTeams             LinescoreTeams            `json:"teams"`
+	PowerPlayStrength          string                    `json:"powerPlayStrength"`
+	HasShootout                bool                      `json:"hasShootout"`
+	LinescoreIntermissionInfo  LinescoreIntermissionInfo `json:"intermissionInfo"`
+	LinescorePowerPlayInfo     LinescorePowerPlayInfo    `json:"powerPlayInfo"`
 }
 
 type LinescorePeriods []struct {
-	PeriodType string    `json:"periodType"`
-	StartTime  time.Time `json:"startTime"`
-	EndTime    time.Time `json:"endTime"`
-	Num        int       `json:"num"`
-	OrdinalNum string    `json:"ordinalNum"`
+	PeriodType           string               `json:"periodType"`
+	StartTime            time.Time            `json:"startTime"`
+	EndTime              time.Time            `json:"endTime"`
+	Num                  int                  `json:"num"`
+	OrdinalNum           string               `json:"ordinalNum"`
 	LinescorePeriodsHome LinescorePeriodsHome `json:"home"`
 	LinescorePeriodsAway LinescorePeriodsAway `json:"away"`
 }
@@ -705,11 +682,11 @@ type LinescoreTeams struct {
 
 type LinescoreTeamsHome struct {
 	LinescoreTeamsHomeTeam LinescoreTeamsHomeTeam `json:"team"`
-	Goals        int  `json:"goals"`
-	ShotsOnGoal  int  `json:"shotsOnGoal"`
-	GoaliePulled bool `json:"goaliePulled"`
-	NumSkaters   int  `json:"numSkaters"`
-	PowerPlay    bool `json:"powerPlay"`
+	Goals                  int                    `json:"goals"`
+	ShotsOnGoal            int                    `json:"shotsOnGoal"`
+	GoaliePulled           bool                   `json:"goaliePulled"`
+	NumSkaters             int                    `json:"numSkaters"`
+	PowerPlay              bool                   `json:"powerPlay"`
 }
 
 type LinescoreTeamsHomeTeam struct {
@@ -722,11 +699,11 @@ type LinescoreTeamsHomeTeam struct {
 
 type LinescoreTeamsAway struct {
 	LinescoreTeamsAwayTeam LinescoreTeamsAwayTeam `json:"team"`
-	Goals        int  `json:"goals"`
-	ShotsOnGoal  int  `json:"shotsOnGoal"`
-	GoaliePulled bool `json:"goaliePulled"`
-	NumSkaters   int  `json:"numSkaters"`
-	PowerPlay    bool `json:"powerPlay"`
+	Goals                  int                    `json:"goals"`
+	ShotsOnGoal            int                    `json:"shotsOnGoal"`
+	GoaliePulled           bool                   `json:"goaliePulled"`
+	NumSkaters             int                    `json:"numSkaters"`
+	PowerPlay              bool                   `json:"powerPlay"`
 }
 
 type LinescoreTeamsAwayTeam struct {
@@ -750,13 +727,13 @@ type LinescorePowerPlayInfo struct {
 }
 
 type Boxscore struct {
-    BoxscoreTeams map[string]BoxscoreTeams `json:"teams"`
-	BoxscoreOfficials BoxscoreOfficials `json:"officials"`
+	BoxscoreTeams     map[string]BoxscoreTeams `json:"teams"`
+	BoxscoreOfficials BoxscoreOfficials        `json:"officials"`
 }
 
 type BoxscoreOfficials []struct {
 	BoxscoreOfficialsOfficial BoxscoreOfficialsOfficial `json:"official"`
-	OfficialType string `json:"officialType"`
+	OfficialType              string                    `json:"officialType"`
 }
 
 type BoxscoreOfficialsOfficial struct {
@@ -768,24 +745,17 @@ type BoxscoreOfficialsOfficial struct {
 type BoxscoreTeams struct {
 	//BoxscoreTeamsAway BoxscoreTeamsAway `json:"away"`
 
-	BoxscoreTeamsTeam BoxscoreTeamsTeam `json:"team"`
-	BoxscoreTeamsTeamStats BoxscoreTeamsTeamStats `json:"teamStats"`
-	BoxscoreTeamsPlayers map[string]BoxscoreTeamsPlayer `json:"players"`
-	BoxscoreTeamsOnIcePlus BoxscoreTeamsOnIcePlus `json:"onIcePlus"`
-	BoxscoreTeamsCoaches BoxscoreTeamsCoaches `json:"coaches"`
+	BoxscoreTeamsTeam      BoxscoreTeamsTeam                 `json:"team"`
+	BoxscoreTeamsTeamStats map[string]BoxscoreTeamsTeamStats `json:"teamStats"`
+	BoxscoreTeamsPlayers   map[string]BoxscoreTeamsPlayer    `json:"players"`
+	BoxscoreTeamsOnIcePlus BoxscoreTeamsOnIcePlus            `json:"onIcePlus"`
+	BoxscoreTeamsCoaches   BoxscoreTeamsCoaches              `json:"coaches"`
 
-	// BoxscoreTeamsHomeTeam BoxscoreTeamsHomeTeam `json:"team"`
-	// BoxscoreTeamsHomeTeamStats BoxscoreTeamsHomeTeamStats `json:"teamStats"`
-	// BoxscoreTeamsHomePlayers map[string]BoxscoreTeamsHomePlayer `json:"players"`
-	// BoxscoreTeamsHomeOnIcePlus BoxscoreTeamsHomeOnIcePlus `json:"onIcePlus"`
-	// BoxscoreTeamsHomeCoaches BoxscoreTeamsHomeCoaches `json:"coaches"`
-
-	Goalies   []int `json:"goalies"`
-	Skaters   []int `json:"skaters"`
-    OnIce     []int `json:"onIce"`
-    Scratches  []int         `json:"scratches"`
+	Goalies    []int         `json:"goalies"`
+	Skaters    []int         `json:"skaters"`
+	OnIce      []int         `json:"onIce"`
+	Scratches  []int         `json:"scratches"`
 	PenaltyBox []interface{} `json:"penaltyBox"`
-
 
 	//BoxscoreTeamsHome BoxscoreTeamsHome `json:"home"`
 }
@@ -804,16 +774,14 @@ type BoxscoreTeams struct {
 
 // }
 
-
 type BoxscoreTeamsOnIcePlus []struct {
 	PlayerID      int `json:"playerId"`
 	ShiftDuration int `json:"shiftDuration"`
 	Stamina       int `json:"stamina"`
 }
 
-
 type BoxscoreTeamsCoaches []struct {
-	BoxscoreTeamsCoachesPerson BoxscoreTeamsCoachesPerson `json:"person"`
+	BoxscoreTeamsCoachesPerson   BoxscoreTeamsCoachesPerson   `json:"person"`
 	BoxscoreTeamsCoachesPosition BoxscoreTeamsCoachesPosition `json:"position"`
 }
 
@@ -822,14 +790,12 @@ type BoxscoreTeamsCoachesPerson struct {
 	Link     string `json:"link"`
 }
 
-
 type BoxscoreTeamsCoachesPosition struct {
 	Code         string `json:"code"`
 	Name         string `json:"name"`
 	Type         string `json:"type"`
 	Abbreviation string `json:"abbreviation"`
 }
-
 
 type BoxscoreTeamsTeam struct {
 	ID           int    `json:"id"`
@@ -839,13 +805,11 @@ type BoxscoreTeamsTeam struct {
 	TriCode      string `json:"triCode"`
 }
 
-
 type BoxscoreTeamsTeamStats struct {
-	BoxscoreTeamTeamStatsTeamSkaterStats BoxscoreTeamTeamStatsTeamSkaterStats `json:"teamSkaterStats"`
+	BoxscoreTeamStatsTeamSkaterStats BoxscoreTeamStatsTeamSkaterStats `json:"teamSkaterStats"`
 }
 
-
-type BoxscoreTeamTeamStatsTeamSkaterStats struct {
+type BoxscoreTeamStatsTeamSkaterStats struct {
 	Goals                  int     `json:"goals"`
 	Pim                    int     `json:"pim"`
 	Shots                  int     `json:"shots"`
@@ -859,21 +823,18 @@ type BoxscoreTeamTeamStatsTeamSkaterStats struct {
 	Hits                   int     `json:"hits"`
 }
 
-
 type BoxscoreTeamsPlayers struct {
 	BoxscoreTeamsPlayer BoxscoreTeamsPlayer `json:"players"`
-
 }
-
 
 type BoxscoreTeamsPlayer struct {
-	BoxscoreTeamsPlayerPerson BoxscoreTeamsPlayerPerson `json:"person"`
-	JerseyNumber string `json:"jerseyNumber"`
+	BoxscoreTeamsPlayerPerson   BoxscoreTeamsPlayerPerson   `json:"person"`
+	JerseyNumber                string                      `json:"jerseyNumber"`
 	BoxscoreTeamsPlayerPosition BoxscoreTeamsPlayerPosition `json:"position"`
-	BoxscoreTeamsPlayerStats BoxscoreTeamsPlayerStats `json:"stats"`
+	BoxscoreTeamsPlayerStats    BoxscoreTeamsPlayerStats    `json:"stats"`
+	//BoxscoreTeamsPlayerStats map[string]BoxscoreTeamsPlayerStats `json:"stats"`
 
 }
-
 
 type BoxscoreTeamsPlayerPerson struct {
 	ID            int    `json:"id"`
@@ -894,7 +855,6 @@ type BoxscoreTeamsPlayerStats struct {
 	BoxscoreTeamsPlayersStatsSkaterStats BoxscoreTeamsPlayersStatsSkaterStats `json:"skaterStats"`
 	BoxscoreTeamsPlayersStatsGoalieStats BoxscoreTeamsPlayersStatsGoalieStats `json:"goalieStats"`
 }
-
 
 type BoxscoreTeamsPlayersStatsSkaterStats struct {
 	TimeOnIce            string `json:"timeOnIce"`
@@ -917,7 +877,6 @@ type BoxscoreTeamsPlayersStatsSkaterStats struct {
 	PowerPlayTimeOnIce   string `json:"powerPlayTimeOnIce"`
 	ShortHandedTimeOnIce string `json:"shortHandedTimeOnIce"`
 }
-
 
 type BoxscoreTeamsPlayersStatsGoalieStats struct {
 	TimeOnIce                  string  `json:"timeOnIce"`
